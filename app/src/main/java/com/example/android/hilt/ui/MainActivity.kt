@@ -18,12 +18,15 @@ package com.example.android.hilt.ui
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModel
 import com.example.android.hilt.R
 import com.example.android.hilt.data.SpUtils
 import com.example.android.hilt.navigator.AppNavigator
 import com.example.android.hilt.navigator.Screens
 import com.example.android.hilt.service.NewServices
+import com.example.android.hilt.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -41,6 +44,15 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var spUtils: SpUtils
 
+//    老方法
+//    @Inject
+//    lateinit var mainViewModel: MainViewModel
+
+    //    implementation "androidx.activity:activity-ktx:1.4.0"
+    //    implementation "androidx.fragment:fragment-ktx:1.4.1"
+    //    提供
+    val viewModel by viewModels<MainViewModel>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -54,6 +66,8 @@ class MainActivity : AppCompatActivity() {
         startForegroundService(Intent(this, NewServices::class.java))
 
         spUtils.put("main", this.javaClass.name)
+
+        viewModel.check()
     }
 
     override fun onBackPressed() {
