@@ -26,6 +26,7 @@ import androidx.fragment.app.Fragment
 import com.example.android.hilt.R
 import com.example.android.hilt.data.LoggerDataSource
 import com.example.android.hilt.data.LoggerLocalDataSource
+import com.example.android.hilt.data.SpUtils
 import com.example.android.hilt.di.DatabaseLogger
 import com.example.android.hilt.di.InMemoryLogger
 import com.example.android.hilt.navigator.AppNavigator
@@ -42,8 +43,12 @@ class ButtonsFragment : Fragment() {
     @DatabaseLogger
     @Inject
     lateinit var logger: LoggerDataSource
-    @Inject lateinit var navigator: AppNavigator
 
+    @Inject
+    lateinit var navigator: AppNavigator
+
+    @Inject
+    lateinit var spUtils: SpUtils
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -80,6 +85,7 @@ class ButtonsFragment : Fragment() {
         }
 
         view.findViewById<Button>(R.id.all_logs).setOnClickListener {
+            spUtils.get("main")?.let { it1 -> logger.addLog(it1) }
             navigator.navigateTo(Screens.LOGS)
         }
 
