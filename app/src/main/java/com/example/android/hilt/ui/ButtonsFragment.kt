@@ -22,7 +22,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.activity.viewModels
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.example.android.hilt.R
 import com.example.android.hilt.data.LoggerDataSource
 import com.example.android.hilt.data.LoggerLocalDataSource
@@ -31,7 +34,14 @@ import com.example.android.hilt.di.DatabaseLogger
 import com.example.android.hilt.di.InMemoryLogger
 import com.example.android.hilt.navigator.AppNavigator
 import com.example.android.hilt.navigator.Screens
+import com.example.android.hilt.viewmodel.MainIntent
+import com.example.android.hilt.viewmodel.MainState
+import com.example.android.hilt.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -47,6 +57,9 @@ class ButtonsFragment : Fragment() {
     @Inject
     lateinit var navigator: AppNavigator
 
+    val viewModel by viewModels<MainViewModel>()
+
+
     @Inject
     lateinit var spUtils: SpUtils
     override fun onCreateView(
@@ -55,6 +68,27 @@ class ButtonsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_buttons, container, false)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        lifecycleScope.launchWhenCreated {
+            viewModel.state.collect {
+                when (it) {
+                    is MainState.BeforeShow -> {
+                        logger.addLog("Interaction with 'BeforeShow'")
+                    }
+                    is MainState.Show -> {
+                        logger.addLog("Interaction with 'Show'")
+
+                    }
+                    is MainState.Dismiss -> {
+                        logger.addLog("Interaction with 'Dismiss'")
+
+                    }
+                }
+            }
+        }
     }
 
     override fun onAttach(context: Context) {
@@ -73,11 +107,19 @@ class ButtonsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         view.findViewById<Button>(R.id.button1).setOnClickListener {
-            logger.addLog("Interaction with 'Button 1'")
+//            logger.addLog("Interaction with 'MainIntent showLog'")
+            doLaunch {
+                viewModel.intent.send(MainIntent.ShowLog(1))
+            }
+//            viewModel.show()
         }
 
         view.findViewById<Button>(R.id.button2).setOnClickListener {
-            logger.addLog("Interaction with 'Button 2'")
+//            logger.addLog("Interaction with 'MainIntent dismissLog'")
+            doLaunch {
+                viewModel.intent.send(MainIntent.DismissLog)
+            }
+//            viewModel.dismiss()
         }
 
         view.findViewById<Button>(R.id.button3).setOnClickListener {
@@ -85,12 +127,18 @@ class ButtonsFragment : Fragment() {
         }
 
         view.findViewById<Button>(R.id.all_logs).setOnClickListener {
-            spUtils.get("main")?.let { it1 -> logger.addLog(it1) }
+//            spUtils.get("main")?.let { it1 -> logger.addLog(it1) }
             navigator.navigateTo(Screens.LOGS)
         }
 
         view.findViewById<Button>(R.id.delete_logs).setOnClickListener {
             logger.removeLogs()
+        }
+    }
+
+    fun doLaunch(block: suspend CoroutineScope.() -> Unit) {
+        GlobalScope.launch {
+            block.invoke(this)
         }
     }
 }

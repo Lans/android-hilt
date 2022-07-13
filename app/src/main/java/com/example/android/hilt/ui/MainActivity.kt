@@ -65,9 +65,9 @@ class MainActivity : AppCompatActivity() {
 
         startForegroundService(Intent(this, NewServices::class.java))
 
-        spUtils.put("main", this.javaClass.name)
+//        spUtils.put("main", this.javaClass.name)
 
-        viewModel.check()
+//        viewModel.check()
     }
 
     override fun onBackPressed() {
