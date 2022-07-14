@@ -46,6 +46,11 @@ class MainViewModel @Inject constructor() : ViewModel() {
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        intent.close()
+    }
+
     fun check() {
         testModel.printLog()
     }
